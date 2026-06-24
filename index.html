@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PodBound Test App Web/iPhone V3.0 Stable</title>
+<style>
+:root{
+  --bg:#F3EFE4; --ink:#20251F; --green:#193426; --dark:#10130F;
+  --copper:#A65D35; --stone:#C9C1AC; --ivory:#F7F2E7; --moss:#536858;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--green);color:var(--ivory);padding:18px 20px}
+header h1{margin:0;font-size:24px}
+header p{margin:4px 0 0;opacity:.85}
+main{padding:16px;max-width:1180px;margin:0 auto}
+.card{background:var(--ivory);border:1px solid var(--stone);border-radius:14px;padding:14px;margin:12px 0;box-shadow:0 1px 0 rgba(0,0,0,.05)}
+.grid{display:grid;gap:12px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+label{display:block;font-weight:700;font-size:13px;margin:8px 0 4px}
+select,input,textarea{width:100%;padding:10px;border:1px solid var(--stone);border-radius:10px;background:white;color:var(--ink);font-size:14px}
+button{border:0;border-radius:10px;padding:10px 12px;background:var(--green);color:var(--ivory);font-weight:800;cursor:pointer}
+button.secondary{background:var(--moss)}
+button.warn{background:var(--copper)}
+button.light{background:var(--stone);color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;border:1px solid var(--stone);border-radius:999px;padding:6px 10px;background:white;font-size:13px;font-weight:700}
+.stat{font-size:34px;font-weight:900;line-height:1}
+.small{font-size:12px;opacity:.75}
+.env{border-left:6px solid var(--copper)}
+.current{outline:3px solid var(--copper)}
+.food{display:flex;gap:6px;flex-wrap:wrap}
+.food span{background:white;border:1px solid var(--stone);border-radius:999px;padding:5px 9px;font-weight:800}
+.actions button{margin:3px}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;font-size:13px;background:white;border-radius:10px;overflow:hidden}
+th,td{border:1px solid var(--stone);padding:8px;text-align:left;vertical-align:top}
+th{background:var(--green);color:var(--ivory)}
+pre{white-space:pre-wrap;background:#111;color:#eee;padding:12px;border-radius:10px;overflow:auto}
+@media(max-width:800px){.grid.two,.grid.three{grid-template-columns:1fr}}
+
+/* Mobile V1 additions */
+.mobile-sticky{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:var(--green);
+  color:var(--ivory);
+  border-radius:0 0 14px 14px;
+  padding:10px 12px;
+  margin:-16px -16px 12px -16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.18);
+}
+.mobile-sticky .pill{background:rgba(255,255,255,.12);color:var(--ivory);border-color:rgba(255,255,255,.25)}
+.mobile-only{display:none}
+@media(max-width:760px){
+  header{padding:14px 12px}
+  header h1{font-size:20px}
+  main{padding:12px}
+  .mobile-only{display:block}
+  .card{border-radius:12px;padding:12px;margin:10px 0}
+  .grid.two,.grid.three{grid-template-columns:1fr}
+  button{width:100%;padding:14px 12px;font-size:16px;margin:4px 0}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .actions button{width:100%;margin:0;min-height:54px}
+  .row{gap:6px}
+  .pill{font-size:12px;padding:6px 8px}
+  .stat{font-size:38px}
+  .food span{font-size:16px;padding:8px 12px}
+  select,input,textarea{font-size:16px;padding:13px}
+  #forecast{grid-template-columns:1fr}
+  #forecast .card:not(.current){font-size:13px}
+  table{font-size:12px}
+  th,td{padding:6px}
+  pre{font-size:11px}
+  #p1Card,#p2Card{border-left:6px solid var(--copper)}
+}
+
+
+.turn-banner{
+  background:var(--dark);
+  color:var(--ivory);
+  border-radius:14px;
+  padding:14px;
+  margin:10px 0;
+  font-size:20px;
+  font-weight:900;
+  text-align:center;
+  letter-spacing:.02em;
+}
+@media(max-width:760px){
+  .turn-banner{
+    position:sticky;
+    top:54px;
+    z-index:15;
+    font-size:18px;
+    padding:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.16);
+  }
+  textarea{font-size:16px}
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>PodBound Test App Web/iPhone V3.0 Stable</h1>
+  <p>Manual playtest helper • V3.2-ish rules • CSV export for Track Lab • web/iPhone stable build • MP3 background music support • mobile-safe controls</p>
+</header>
+
+<main>
+
+<section class="card">
+  <h2>Background Music</h2>
+  <p class="small">Optional: choose a royalty-free MP3/M4A/WAV file from your device. It loops as background music. On iPhone, tap <b>Play Music</b> after choosing the file.</p>
+  <input id="musicFile" type="file" accept="audio/*" onchange="loadMusicFile(event)" />
+  <div class="row" style="margin-top:10px">
+    <button class="secondary" onclick="playMusic()">▶ Play Music</button>
+    <button class="light" onclick="pauseMusic()">⏸ Pause Music</button>
+    <button class="light" onclick="stopMusic()">■ Stop Music</button>
+  </div>
+  <label>Volume</label>
+  <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.35" oninput="setMusicVolume(this.value)" />
+  <audio id="bgMusic" loop playsinline></audio>
+</section>
+
+<section id="setup" class="card">
+  <h2>Setup</h2>
+  <div class="grid three">
+    <div>
+      <label>Track</label>
+      <select id="trackSelect">
+        <option value="Cow Slowdown / Resource Scarcity">Cow Slowdown / Resource Scarcity</option>
+        <option value="Balanced Starter">Balanced Starter</option>
+        <option value="Stress / Unstable">Stress / Unstable</option>
+        <option value="Growth Race">Growth Race</option>
+      </select>
+    </div>
+    <div>
+      <label>Food Branch</label>
+      <select id="foodBranch">
+        <option value="A - Draw 1">A - Draw 1</option>
+        <option value="B - Reveal 2 Keep 1">B - Reveal 2 Keep 1</option>
+      </select>
+    </div>
+    <div>
+      <label>Run ID</label>
+      <input id="runId" />
+    </div>
+  </div>
+  <div class="grid two">
+    <div>
+      <label>Mode</label>
+      <select id="gameMode">
+        <option value="manual">Play Both Species / Hot Seat</option>
+        <option value="ai">Play vs AI (P2 AI)</option>
+      </select>
+    </div>
+    <div>
+      <label>First Player</label>
+      <select id="firstPlayer">
+        <option value="coin">Flip a Coin</option>
+        <option value="P1">P1 First</option>
+        <option value="P2">P2 First</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid two">
+    <div>
+      <label>P1 Species</label>
+      <select id="p1Species">
+        <option value="Dairy Cow">Dairy Cow</option>
+        <option value="Powder Blue">Powder Blue</option>
+        <option value="Little Sea">Little Sea</option>
+        <option value="Clown Isopod">Clown Isopod</option>
+        <option value="Rubber Ducky">Rubber Ducky</option>
+        <option value="Expansus">Expansus</option>
+      </select>
+    </div>
+    <div>
+      <label>P2 Species</label>
+      <select id="p2Species">
+        <option value="Dairy Cow">Dairy Cow</option>
+        <option value="Powder Blue" selected>Powder Blue</option>
+        <option value="Little Sea">Little Sea</option>
+        <option value="Clown Isopod">Clown Isopod</option>
+        <option value="Rubber Ducky">Rubber Ducky</option>
+        <option value="Expansus">Expansus</option>
+      </select>
+    </div>
+  </div>
+  <label>Custom Track, optional, comma-separated 6 environments</label>
+  <input id="customTrack" placeholder="Fresh Food Drop, Lush Leaf Cover, ..." />
+  <div class="row" style="margin-top:12px">
+    <button onclick="randomEverything()">Random Everything</button>
+    <button onclick="randomizeTrack()">Randomize Track</button>
+    <button onclick="randomizeSpecies()">Random Species</button>
+    <button onclick="startGame()">Start Game</button>
+    <button class="light" onclick="resetAll()">Reset</button>
+  </div>
+  <p class="small"><b>Randomize Track</b> chooses 6 unique Environments from the 12-card pool and fills the Custom Track box. <b>Random Species</b> assigns two different colonies.</p>
+  <p class="small"><b>iPhone note:</b> This stable build uses hardcoded dropdowns and no generated audio engine. For music, choose a local audio file and tap Play Music.</p>
+</section>
+
+<section id="game" class="hidden">
+  <div id="mobileSticky" class="mobile-sticky mobile-only"></div>
+  <div id="turnBanner" class="turn-banner"></div>
+  <section class="card env">
+    <div class="row">
+      <span class="pill" id="roundPill">Round 1/6</span>
+      <span class="pill" id="currentEnvName"></span>
+      <span class="pill" id="currentEnvTiming"></span>
+      <span class="pill" id="turnPill">Turn: Start Round</span>
+    </div>
+    <p id="currentEnvText"></p>
+    <div id="forecast" class="grid three"></div>
+    <div class="row">
+      <button class="light" onclick="playMusic()">▶ Music</button>
+      <button onclick="startRound()">Resolve Start/Food Phase</button>
+      <button class="secondary" onclick="endTurn()">End Turn</button>
+      <button class="secondary" onclick="aiTakeTurn()">AI Take Turn</button>
+      <button class="secondary" onclick="runAIVsAI()">Run AI vs AI Game</button>
+      <button class="secondary" onclick="endRound()">End Round / Environment Backup</button>
+      <button class="warn" onclick="finishGame()">Finish & Export</button>
+      <button class="secondary" onclick="startNewGameSameSetup()">New Game Same Setup</button>
+      <button class="light" onclick="returnToSetup()">Change Setup</button>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div id="p1Card" class="card"></div>
+    <div id="p2Card" class="card"></div>
+  </section>
+
+  <section class="card">
+    <h3>Match Log</h3>
+    <table id="logTable"><thead><tr><th>Round</th><th>Player</th><th>Action / Note</th></tr></thead><tbody></tbody></table>
+  </section>
+</section>
+
+
+<section id="shiftBox" class="card hidden">
+  <h2>Shift the Shelter</h2>
+  <p>Select a future Environment, then choose one adjacent future Environment to swap with it.</p>
+  <div id="shiftOptions" class="grid two"></div>
+  <div class="row" style="margin-top:10px">
+    <button class="light" onclick="closeShiftShelter()">Cancel</button>
+  </div>
+</section>
+
+<section id="exportBox" class="card hidden">
+  <h2>Game Result</h2>
+  <div id="winnerSummary" class="card" style="background:white"></div>
+  <label>Game Notes</label>
+  <textarea id="gameNotes" rows="3" placeholder="Optional notes: what felt strong, weird, fun, broken, etc."></textarea>
+  <p>Copy this CSV into your tracker, or download it. Paste rows into <b>Human Log</b> or <b>Paste Sim Here</b> starting at A2 if headers already exist.</p>
+  <div class="row">
+    <button onclick="saveMatch()">Save Match</button>
+    <button onclick="startNewGameSameSetup()">Start New Game Same Setup</button>
+    <button class="secondary" onclick="returnToSetup()">Change Setup</button>
+    <button onclick="downloadCSV()">Download CSV</button>
+    <button class="secondary" onclick="copyCSV()">Copy CSV</button>
+  </div>
+  <pre id="csvOut"></pre>
+</section>
+
+<section id="historyBox" class="card">
+  <h2>Saved Match History</h2>
+  <div id="historySummary" class="row"></div>
+  <div class="row" style="margin:10px 0">
+    <button onclick="exportHistory()">Download Saved History CSV</button>
+    <button class="secondary" onclick="copyHistory()">Copy Saved History CSV</button>
+    <button class="warn" onclick="clearHistory()">Clear Saved History</button>
+  </div>
+  <div id="historyTable"></div>
+</section>
+</main>
+
+<script>
+const species = {
+  "Dairy Cow": {g:5,c:7,s:5,behavior:"Voracious Brood: after Cultivate, discard up to 2 extra Food cards for +1 Bonus Population each."},
+  "Powder Blue": {g:4,c:5,s:4,behavior:"Scrap Savvy: one Food value 2 may count as 3 when paying Consumption."},
+  "Little Sea": {g:3,c:4,s:4,behavior:"Defensive Curl: once per round, when Environment Stress hits, discard 1 Food to prevent 1 Stress."},
+  "Clown Isopod": {g:3,c:4,s:3,behavior:"Shift the Shelter: once per game, swap two adjacent future Environments."},
+  "Rubber Ducky": {g:2,c:3,s:2,behavior:"Patient Brood: if it did not Cultivate last round, Cultivate gains +2 Bonus Population. Not Round 1."},
+  "Expansus": {g:4,c:6,s:3,behavior:"Overextend: after Cultivate, gain 1 Stress to gain +2 Bonus Population."}
+};
+
+const envs = {
+  "Fresh Food Drop": {timing:"Start", text:"At the start of the round, each player reveals 2 Food cards, adds 1 to their Food Stash, and discards the other."},
+  "Breeding Boom": {timing:"Active", text:"When a colony Cultivates this round, it gains +1 Bonus Population."},
+  "Lush Leaf Cover": {timing:"Active", text:"Cultivate costs 1 less Food this round. Cultivate cannot cost less than 1 Food."},
+  "Growing Brood": {timing:"Active", text:"When a colony Cultivates this round, it gains +1 Bonus Population and +1 Stress."},
+  "Overturned Hide": {timing:"Active", text:"When a colony Cultivates or Scavenges this round, it gains +1 Stress."},
+  "Withered Forage": {timing:"End", text:"At the end of the round, each player discards their lowest-value Food card."},
+  "Rotting Cache": {timing:"End", text:"At the end of the round, each player with 3 or more Food cards gains +1 Stress."},
+  "Ant Invasion": {timing:"End", text:"At the end of the round, the player with more Food cards gains +1 Stress. If tied, neither player gains Stress."},
+  "Overcrowding": {timing:"End", text:"At the end of the round, the colony with higher Population gains +1 Stress. If tied, neither colony gains Stress."},
+  "Last Scraps": {timing:"End", text:"At the end of the round, each colony with 1 or fewer Food cards gains +1 Stress."},
+  "Crowded Hides": {timing:"End", text:"At the end of the round, each colony with 10 or more Population gains +1 Stress."},
+  "Waste Buildup": {timing:"End", text:"At the end of the round, each colony gains +1 Stress. A colony that Adapted this round does not gain this Stress."}
+};
+
+const environmentPool = Object.keys(envs);
+
+const tracks = {
+  "Cow Slowdown / Resource Scarcity":["Last Scraps","Withered Forage","Ant Invasion","Fresh Food Drop","Rotting Cache","Overturned Hide"],
+  "Balanced Starter":["Fresh Food Drop","Overturned Hide","Breeding Boom","Withered Forage","Lush Leaf Cover","Overcrowding"],
+  "Stress / Unstable":["Fresh Food Drop","Waste Buildup","Overturned Hide","Lush Leaf Cover","Crowded Hides","Growing Brood"],
+  "Growth Race":["Fresh Food Drop","Lush Leaf Cover","Breeding Boom","Growing Brood","Overcrowding","Crowded Hides"]
+};
+
+let state = null;
+const foodDeckBase = [2,2,2,2,3,3,3,3,4,4,4,4];
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function drawFood(){
+  if(state.foodDeck.length===0){ state.foodDeck = shuffle(state.foodDiscard.splice(0)); }
+  return state.foodDeck.pop() ?? null;
+}
+function makePlayer(name, sp){
+  return {name, species:sp, pop:5, stress:0, food:[], lastCultivate:null, adapted:false, secured:false, shifted:false, prepared:null,
+    actionTakenRound:null, hasEndedTurn:false,
+    behaviorTriggers:0, bonusPop:0, bonusBlocked:0, actions:{Cultivate:0,Forage:0,Scavenge:0,Adapt:0,Prepare:0,Secure:0}};
+}
+function unstable(p){return p.stress >= species[p.species].s}
+function score(p){return p.pop - p.stress - (unstable(p)?2:0)}
+function addLog(player,msg){ state.log.push({round:state.round+1,player,msg}); renderLog(); }
+
+
+
+
+let currentMusicURL = null;
+
+function loadMusicFile(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const audio = document.getElementById("bgMusic");
+  if(currentMusicURL) URL.revokeObjectURL(currentMusicURL);
+  currentMusicURL = URL.createObjectURL(file);
+  audio.src = currentMusicURL;
+  audio.loop = true;
+  audio.volume = Number(document.getElementById("musicVolume").value || 0.35);
+}
+
+function setMusicVolume(value){
+  const audio = document.getElementById("bgMusic");
+  if(audio) audio.volume = Number(value);
+}
+
+function playMusic(){
+  const audio = document.getElementById("bgMusic");
+  if(!audio || !audio.src){
+    alert("Choose a music file first.");
+    return;
+  }
+  audio.volume = Number(document.getElementById("musicVolume").value || 0.35);
+  const playPromise = audio.play();
+  if(playPromise && playPromise.catch){
+    playPromise.catch(function(){
+      alert("iPhone blocked autoplay. Tap Play Music again after choosing the file.");
+    });
+  }
+}
+
+function pauseMusic(){
+  const audio = document.getElementById("bgMusic");
+  if(audio) audio.pause();
+}
+
+function stopMusic(){
+  const audio = document.getElementById("bgMusic");
+  if(audio){
+    audio.pause();
+    audio.currentTime = 0;
+  }
+}
+
+
+function speciesNames(){ return Object.keys(species); }
+
+function randomizeSpecies(){
+  const names = speciesNames().slice();
+  shuffle(names);
+  document.getElementById("p1Species").value = names[0];
+  document.getElementById("p2Species").value = names[1];
+}
+
+function randomEverything(){
+  randomizeTrack();
+  randomizeSpecies();
+  document.getElementById("firstPlayer").value = "coin";
+  document.getElementById("runId").value = "PB-"+new Date().toISOString().slice(0,10)+"-"+Math.floor(Math.random()*9999);
+}
+
+function savedMatches(){
+  try { return JSON.parse(localStorage.getItem("podbound_saved_matches_v1") || "[]"); }
+  catch(e){ return []; }
+}
+
+function setSavedMatches(rows){
+  localStorage.setItem("podbound_saved_matches_v1", JSON.stringify(rows));
+}
+
+function csvRowsOnly(){
+  return makeCSV().split("\n").slice(1).join("\n");
+}
+
+function parseCSVLine(line){
+  const out=[]; let cur=""; let inside=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch === '"' && line[i+1] === '"'){ cur += '"'; i++; }
+    else if(ch === '"'){ inside = !inside; }
+    else if(ch === "," && !inside){ out.push(cur); cur=""; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function saveMatch(){
+  if(!state){ alert("No game to save yet."); return; }
+  const headers = makeCSV().split("\n")[0];
+  const rows = csvRowsOnly().split("\n").filter(Boolean).map(parseCSVLine);
+  const saved = savedMatches();
+  const existing = new Set(saved.map(r => r[0] + "|" + r[7])); // Run ID + Player
+  rows.forEach(r => {
+    const key = r[0] + "|" + r[7];
+    if(!existing.has(key)) saved.push(r);
+  });
+  setSavedMatches(saved);
+  state.savedCurrentMatch = true;
+  renderHistory();
+  alert("Match saved.");
+}
+
+function historyCSV(){
+  const headers=["Run ID","Date","Source","Track Name","Track Type","Round Track","Food Branch","Player","Species","Opponent Species","Win?","Final Population","Final Stress","Unstable End?","Final Score","Behavior Triggers","Bonus Pop Gained","Bonus Pop Blocked","Cultivate","Forage","Scavenge","Adapt","Prepare","Secure","Notes"];
+  const rows = savedMatches();
+  return [headers, ...rows].map(r=>r.map(x=>`"${String(x ?? "").split('"','""')}"`).join(",")).join("\n");
+}
+
+function exportHistory(){
+  const blob=new Blob([historyCSV()],{type:"text/csv"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="podbound_saved_match_history.csv"; a.click();
+}
+
+async function copyHistory(){
+  await navigator.clipboard.writeText(historyCSV());
+  alert("Saved history CSV copied.");
+}
+
+function clearHistory(){
+  if(confirm("Clear all saved match history on this device?")){
+    localStorage.removeItem("podbound_saved_matches_v1");
+    renderHistory();
+  }
+}
+
+function renderHistory(){
+  const rows=savedMatches();
+  const box=document.getElementById("historyTable");
+  const summary=document.getElementById("historySummary");
+  if(!box || !summary) return;
+  const games = new Set(rows.map(r=>r[0])).size;
+  summary.innerHTML = `<span class="pill">${games} games saved</span><span class="pill">${rows.length} player rows</span>`;
+  if(!rows.length){
+    box.innerHTML="<p class='small'>No saved matches yet.</p>";
+    return;
+  }
+  const recent = rows.slice(-12).reverse();
+  box.innerHTML = `<table><thead><tr><th>Run</th><th>Player</th><th>Species</th><th>Opponent</th><th>Win?</th><th>Pop</th><th>Stress</th><th>Score</th></tr></thead><tbody>${
+    recent.map(r=>`<tr><td>${r[0]}</td><td>${r[7]}</td><td>${r[8]}</td><td>${r[9]}</td><td>${r[10]}</td><td>${r[11]}</td><td>${r[12]}</td><td>${r[14]}</td></tr>`).join("")
+  }</tbody></table>`;
+}
+
+function randomizeTrack(){
+  const pool = environmentPool.slice();
+  shuffle(pool);
+  const picked = pool.slice(0,6);
+  document.getElementById("customTrack").value = picked.join(", ");
+  const tsel = document.getElementById("trackSelect");
+  if(tsel){
+    // Keep dropdown visible but custom field controls actual game.
+  }
+}
+
+function init(){
+  const tsel=document.getElementById("trackSelect");
+  if(tsel.options.length===0) Object.keys(tracks).forEach(t=>tsel.add(new Option(t,t)));
+  ["p1Species","p2Species"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el.options.length===0) Object.keys(species).forEach(s=>el.add(new Option(s,s)));
+  });
+  document.getElementById("p2Species").value="Powder Blue";
+  document.getElementById("runId").value="PB-"+new Date().toISOString().slice(0,10)+"-"+Math.floor(Math.random()*9999);
+  renderHistory();
+}
+function chooseFirstPlayer(){
+  const selected=document.getElementById("firstPlayer").value;
+  if(selected==="coin") return Math.random()<0.5 ? "P1" : "P2";
+  return selected;
+}
+
+function turnOrderForRound(){
+  if(!state) return ["P1","P2"];
+  const first = (state.round % 2 === 0) ? state.firstPlayer : (state.firstPlayer==="P1" ? "P2" : "P1");
+  return [first, first==="P1" ? "P2" : "P1"];
+}
+
+function nextPendingTurn(){
+  const order=turnOrderForRound();
+  for(const n of order){
+    if(!getP(n).hasEndedTurn) return n;
+  }
+  return null;
+}
+
+function advanceTurn(){
+  state.currentTurn=nextPendingTurn();
+}
+
+function startGame(){
+  let tr = document.getElementById("customTrack").value.trim();
+  const selectedTrackName = document.getElementById("trackSelect").value || "Cow Slowdown / Resource Scarcity";
+  let chosenTrack = tr ? tr.split(",").map(x=>x.trim()).filter(Boolean) : (tracks[selectedTrackName] || tracks["Cow Slowdown / Resource Scarcity"]).slice();
+  if(chosenTrack.length!==6 || chosenTrack.some(x=>!envs[x])){ alert("Track must contain exactly 6 valid Environment names."); return; }
+  state = {
+    runId:document.getElementById("runId").value || "PB-"+Date.now(),
+    trackName: tr ? "Random / Custom Track" : selectedTrackName,
+    trackType: tr ? "Custom" : inferTrackType(document.getElementById("trackSelect").value),
+    foodBranch:document.getElementById("foodBranch").value,
+    mode:document.getElementById("gameMode").value,
+    firstPlayer:chooseFirstPlayer(),
+    currentTurn:null,
+    track:chosenTrack, round:0, startedRound:false, gameFinished:false, savedCurrentMatch:false, log:[],
+    foodDeck:shuffle(foodDeckBase.slice()), foodDiscard:[],
+    p1:makePlayer("P1",document.getElementById("p1Species").value),
+    p2:makePlayer("P2",document.getElementById("p2Species").value)
+  };
+  state.currentTurn=state.firstPlayer;
+  addLog("System", `${state.firstPlayer} won first player / starts odd rounds.`);
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  render();
+}
+function inferTrackType(name){
+  if(name.includes("Scarcity")) return "Resource Scarcity";
+  if(name.includes("Stress")) return "Stress / Unstable";
+  if(name.includes("Growth")) return "Growth Race";
+  return "Balanced";
+}
+function currentEnv(){return state.track[Math.min(state.round, state.track.length-1)];}
+
+function render(){
+  const env=currentEnv();
+  document.getElementById("roundPill").textContent=state.gameFinished ? "Game Finished" : `Round ${Math.min(state.round+1,6)}/6`;
+  document.getElementById("currentEnvName").textContent=env;
+  document.getElementById("currentEnvTiming").textContent=envs[env].timing;
+  document.getElementById("currentEnvText").textContent=envs[env].text;
+  const turnPill=document.getElementById("turnPill");
+  if(turnPill) turnPill.textContent=`Turn: ${state.currentTurn || "Start Round"}`;
+  const banner=document.getElementById("turnBanner");
+  if(banner){
+    const active = state.currentTurn ? getP(state.currentTurn) : null;
+    banner.textContent = state.gameFinished ? "GAME FINISHED — Save Match or Start New Game" : (active ? `${state.currentTurn} TURN — ${active.species}` : `Start Round ${Math.min(state.round+1,6)}`);
+  }
+  const sticky=document.getElementById("mobileSticky");
+  if(sticky){
+    sticky.innerHTML=`<div class="row"><span class="pill">${state.gameFinished?"Game Finished":`Round ${Math.min(state.round+1,6)}/6`}</span><span class="pill">${env}</span><span class="pill">Turn: ${state.currentTurn || (state.gameFinished?"Done":"Start Round")}</span><span class="pill">P1 ${score(state.p1)}</span><span class="pill">P2 ${score(state.p2)}</span></div>`;
+  }
+  const fc=document.getElementById("forecast"); fc.innerHTML="";
+  state.track.forEach((e,i)=>{
+    const d=document.createElement("div"); d.className="card "+(i===state.round?"current":"");
+    d.innerHTML=`<b>${i+1}. ${e}</b><br><span class="small">${envs[e].timing}</span><p class="small" style="margin-bottom:0">${envs[e].text}</p>`;
+    fc.appendChild(d);
+  });
+  renderPlayer(state.p1, document.getElementById("p1Card"));
+  renderPlayer(state.p2, document.getElementById("p2Card"));
+}
+function renderPlayer(p, el){
+  const st=species[p.species];
+  el.innerHTML=`
+    <h2>${p.name}: ${p.species}</h2>
+    <div class="row">
+      <div><div class="small">Population</div><div class="stat">${p.pop}</div></div>
+      <div><div class="small">Stress</div><div class="stat">${p.stress}</div></div>
+      <span class="pill">G ${st.g}</span><span class="pill">C ${effectiveCost(p)}</span><span class="pill">S ${st.s}</span>
+      <span class="pill">${unstable(p)?"UNSTABLE":"Stable"}</span>
+      <span class="pill">Score ${score(p)}</span>
+      <span class="pill">${p.actionTakenRound===state.round?"Action Taken":"Action Ready"}</span>
+      <span class="pill">${p.hasEndedTurn?"Turn Ended":(state.currentTurn===p.name?"Current Turn":"Waiting")}</span>
+      ${state.mode==="ai" && p.name==="P2" ? `<span class="pill">AI Controlled</span>` : ""}
+    </div>
+    <p class="small"><b>Behavior:</b> ${st.behavior}</p>
+    <div class="food">${p.food.map((f,i)=>`<span onclick="discardFood('${p.name}',${i})">${f}</span>`).join("") || "<span>no food</span>"}</div>
+    <div class="row" style="margin-top:10px">
+      <button class="light" onclick="manual('${p.name}','pop',1)">+ Pop</button>
+      <button class="light" onclick="manual('${p.name}','pop',-1)">- Pop</button>
+      <button class="light" onclick="manual('${p.name}','stress',1)">+ Stress</button>
+      <button class="light" onclick="manual('${p.name}','stress',-1)">- Stress</button>
+      <button class="light" onclick="addFood('${p.name}',2)">+ Food 2</button>
+      <button class="light" onclick="addFood('${p.name}',3)">+ Food 3</button>
+      <button class="light" onclick="addFood('${p.name}',4)">+ Food 4</button>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      ${["Cultivate","Forage","Scavenge","Adapt","Prepare","Secure"].map(a=>`<button ${(p.actionTakenRound===state.round || state.currentTurn!==p.name || ((state.mode==="ai" && p.name==="P2") || state.mode==="aivai"))?"disabled":""} onclick="action('${p.name}','${a}')">${a}</button>`).join("")}
+    </div>
+    ${p.species==="Clown Isopod" ? `<div style="margin-top:10px"><button class="warn" ${p.shifted?"disabled":""} onclick="openShiftShelter('${p.name}')">${p.shifted?"Shift Used":"Use Shift the Shelter"}</button></div>` : ""}
+    `;
+}
+function effectiveCost(p){
+  let c=species[p.species].c;
+  if(currentEnv()==="Lush Leaf Cover") c=Math.max(1,c-1);
+  return c;
+}
+function getP(n){return n==="P1"?state.p1:state.p2}
+function opp(p){return p.name==="P1"?state.p2:state.p1}
+function manual(n,field,d){const p=getP(n); p[field]=Math.max(0,p[field]+d); addLog(n,`Manual ${field} ${d>0?"+":""}${d}`); render();}
+function addFood(n,v){getP(n).food.push(v); addLog(n,`Added Food ${v}`); render();}
+function discardFood(n,i){const p=getP(n); const [v]=p.food.splice(i,1); state.foodDiscard.push(v); addLog(n,`Discarded Food ${v}`); render();}
+function startRound(){
+  if(state.gameFinished){alert("Game is finished. Save the match or start a new game."); return;}
+  if(state.round>=6){finishGame(); return;}
+  if(state.startedRound){alert("Round already started."); return;}
+  const env=currentEnv();
+  if(env==="Fresh Food Drop"){
+    [state.p1,state.p2].forEach(p=>{
+      const a=drawFood(), b=drawFood();
+      const keep=Math.max(a??0,b??0), discard=Math.min(a??0,b??0);
+      if(keep) p.food.push(keep);
+      if(discard) state.foodDiscard.push(discard);
+      addLog(p.name,`Fresh Food Drop: kept ${keep}, discarded ${discard}`);
+    });
+  }
+  [state.p1,state.p2].forEach(p=>{
+    if(state.foodBranch==="A - Draw 1"){
+      const f=drawFood(); if(f) p.food.push(f);
+      addLog(p.name,`Food Phase: drew ${f}`);
+    }else{
+      const a=drawFood(), b=drawFood();
+      const keep=Math.max(a??0,b??0), discard=Math.min(a??0,b??0);
+      if(keep) p.food.push(keep); if(discard) state.foodDiscard.push(discard);
+      addLog(p.name,`Food Phase: kept ${keep}, discarded ${discard}`);
+    }
+    p.adapted=false; p.secured=false; p.actionTakenRound=null; p.hasEndedTurn=false;
+  });
+  state.currentTurn=nextPendingTurn();
+  addLog("System", `Turn order this round: ${turnOrderForRound().join(" then ")}`);
+  state.startedRound=true; render();
+}
+function payFood(p,cost){
+  p.food.sort((a,b)=>b-a);
+  let paid=[], sum=0;
+  while(p.food.length && sum<cost){ const v=p.food.shift(); paid.push(v); sum+=v; }
+  if(sum<cost){ p.food.push(...paid); p.food.sort((a,b)=>a-b); return false; }
+  state.foodDiscard.push(...paid);
+  return true;
+}
+function addBonus(p,amt){
+  if(amt<=0)return;
+  if(unstable(p)){ p.bonusBlocked+=amt; addLog(p.name,`Bonus ${amt} blocked by Unstable`); }
+  else { p.pop+=amt; p.bonusPop+=amt; }
+}
+function action(n,a){
+  if(state.gameFinished){alert("Game is finished. Save the match or start a new game."); return;}
+  if(!state.startedRound){alert("Start the round first."); return;}
+  const p=getP(n), o=opp(p), env=currentEnv();
+  if(p.hasEndedTurn){
+    alert(`${p.name} already ended their turn.`);
+    return;
+  }
+  if(p.actionTakenRound===state.round){
+    alert(`${p.name} already took a Main Action this round. Use End Turn when done.`);
+    return;
+  }
+  if(state.currentTurn!==p.name){
+    alert(`It is ${state.currentTurn || "no one's"} turn.`);
+    return;
+  }
+  if((state.mode==="ai" && p.name==="P2") || state.mode==="aivai"){
+    alert("This player is AI controlled.");
+    return;
+  }
+  p.actionTakenRound=state.round;
+  p.actions[a]++;
+  if(a==="Cultivate"){
+    let cost=effectiveCost(p);
+    if(p.species==="Powder Blue" && p.food.includes(2)) cost=Math.max(0,cost-1);
+    if(!payFood(p,cost)){ alert(`${p.name} cannot pay Cultivate cost.`); p.actions[a]--; p.actionTakenRound=null; return; }
+    p.pop+=species[p.species].g;
+    if(env==="Breeding Boom") addBonus(p,1);
+    if(env==="Growing Brood"){ addBonus(p,1); p.stress++; }
+    if(env==="Overturned Hide") p.stress++;
+    if(p.species==="Rubber Ducky" && state.round!==0 && p.lastCultivate!==state.round-1){ addBonus(p,2); p.behaviorTriggers++; }
+    if(p.species==="Expansus" && confirm("Use Overextend? (+2 Bonus Population, +1 Stress)")){ addBonus(p,2); p.stress++; p.behaviorTriggers++; }
+    if(p.species==="Dairy Cow" && p.food.length && confirm("Use Voracious Brood? Discard up to 2 extra Food cards for +1 Bonus Population each.")){
+      const max=Math.min(2,p.food.length);
+      let count=Number(prompt(`Discard how many extra Food cards? 0-${max}`, String(max)));
+      if(Number.isNaN(count)) count=0;
+      count=Math.max(0,Math.min(max,count));
+      for(let i=0;i<count;i++){
+        const m=Math.min(...p.food);
+        p.food.splice(p.food.indexOf(m),1);
+        state.foodDiscard.push(m);
+      }
+      addBonus(p,count);
+      if(count>0) p.behaviorTriggers++;
+    }
+    p.lastCultivate=state.round;
+    addLog(n,`Cultivated`);
+  }
+  if(a==="Forage"){
+    const f1=drawFood(), f2=drawFood();
+    const keep=prompt(`Forage drew ${f1} and ${f2}. Type value to keep:`, Math.max(f1??0,f2??0));
+    const k=Number(keep);
+    if(k===f1){p.food.push(f1); if(f2)state.foodDiscard.push(f2);}
+    else {p.food.push(f2); if(f1)state.foodDiscard.push(f1);}
+    addLog(n,`Foraged`);
+  }
+  if(a==="Scavenge"){
+    if(o.secured){ o.secured=false; addLog(n,`Scavenge blocked by Secure`); }
+    else if(o.food.length){ const m=Math.min(...o.food); o.food.splice(o.food.indexOf(m),1); p.food.push(m); if(env==="Overturned Hide") p.stress++; addLog(n,`Scavenged Food ${m}`); }
+    else addLog(n,`Scavenge did nothing`);
+  }
+  if(a==="Adapt"){
+    p.adapted=true;
+    let reduce=1;
+    if(p.food.length && confirm("Discard 1 Food to reduce Stress by 2 instead?")){
+      const m=Math.min(...p.food); p.food.splice(p.food.indexOf(m),1); state.foodDiscard.push(m); reduce=2;
+    }
+    p.stress=Math.max(0,p.stress-reduce); addLog(n,`Adapted -${reduce} Stress`);
+  }
+  if(a==="Prepare"){ p.prepared = Number(prompt("Prepare which future round number?",""+Math.min(6,state.round+2))) - 1; addLog(n,`Prepared round ${p.prepared+1}`); }
+  if(a==="Secure"){ p.secured=true; addLog(n,`Secured Food Stash`); }
+  advanceTurn();
+  render();
+}
+function envStress(p,amt){
+  if(p.prepared===state.round){ amt=Math.max(0,amt-1); p.prepared=null; addLog(p.name,"Prepare reduced Environment effect by 1"); }
+  if(p.species==="Little Sea" && amt>0 && p.food.length && confirm(`${p.name} Defensive Curl? Discard 1 Food to prevent 1 Stress.`)){
+    const m=Math.min(...p.food); p.food.splice(p.food.indexOf(m),1); state.foodDiscard.push(m); amt--; p.behaviorTriggers++;
+  }
+  p.stress+=amt;
+}
+function endRound(auto=false){
+  if(state.gameFinished){alert("Game is finished. Save the match or start a new game."); return;}
+  if(!state.startedRound){alert("Start round first."); return;}
+  if(nextPendingTurn() && !auto){
+    if(!confirm("Not all players have ended their turns. End round anyway?")) return;
+  }
+  const e=currentEnv(), ps=[state.p1,state.p2];
+  if(e==="Withered Forage") ps.forEach(p=>{ if(p.secured){p.secured=false; addLog(p.name,"Secure blocked Withered Forage");} else if(p.food.length){const m=Math.min(...p.food); p.food.splice(p.food.indexOf(m),1); state.foodDiscard.push(m); addLog(p.name,`Withered Forage discarded ${m}`);} });
+  if(e==="Rotting Cache") ps.forEach(p=>{ if(p.food.length>=3) envStress(p,1); });
+  if(e==="Ant Invasion"){ const [a,b]=ps; if(a.food.length!==b.food.length) envStress(a.food.length>b.food.length?a:b,1); }
+  if(e==="Overcrowding"){ const [a,b]=ps; if(a.pop!==b.pop) envStress(a.pop>b.pop?a:b,1); }
+  if(e==="Last Scraps") ps.forEach(p=>{ if(p.food.length<=1) envStress(p,1); });
+  if(e==="Crowded Hides") ps.forEach(p=>{ if(p.pop>=10) envStress(p,1); });
+  if(e==="Waste Buildup") ps.forEach(p=>{ if(!p.adapted) envStress(p,1); });
+  addLog("System",`Ended ${e}`);
+  state.round++;
+  state.startedRound=false;
+  state.currentTurn=null;
+  if(state.round>=6){
+    addLog("System","Game complete after 6 rounds.");
+    finishGame();
+  } else render();
+}
+function renderLog(){
+  const tb=document.querySelector("#logTable tbody"); tb.innerHTML="";
+  state.log.forEach(l=>{const tr=document.createElement("tr"); tr.innerHTML=`<td>${l.round}</td><td>${l.player}</td><td>${l.msg}</td>`; tb.appendChild(tr);});
+}
+
+let shiftPlayerName = null;
+let shiftFirstIndex = null;
+
+function openShiftShelter(playerName){
+  const p=getP(playerName);
+  if(p.species!=="Clown Isopod"){ alert("Only Clown Isopod can use Shift the Shelter."); return; }
+  if(p.shifted){ alert("Shift the Shelter has already been used."); return; }
+  shiftPlayerName=playerName;
+  shiftFirstIndex=null;
+  document.getElementById("shiftBox").classList.remove("hidden");
+  renderShiftOptions();
+  document.getElementById("shiftBox").scrollIntoView({behavior:"smooth"});
+}
+
+function closeShiftShelter(){
+  shiftPlayerName=null;
+  shiftFirstIndex=null;
+  document.getElementById("shiftBox").classList.add("hidden");
+}
+
+function renderShiftOptions(){
+  const box=document.getElementById("shiftOptions");
+  box.innerHTML="";
+  state.track.forEach((e,i)=>{
+    const future = i > state.round;
+    const selected = i===shiftFirstIndex;
+    const d=document.createElement("div");
+    d.className="card " + (selected?"current":"");
+    d.innerHTML=`<b>Round ${i+1}: ${e}</b><br><span class="small">${envs[e].timing}</span><p class="small">${envs[e].text}</p>`;
+    const btn=document.createElement("button");
+    if(!future){
+      btn.textContent="Current/Past";
+      btn.disabled=true;
+      btn.className="light";
+    }else if(shiftFirstIndex===null){
+      btn.textContent="Select";
+      btn.onclick=()=>{ shiftFirstIndex=i; renderShiftOptions(); };
+    }else if(Math.abs(i-shiftFirstIndex)===1 && i > state.round){
+      btn.textContent="Swap with this";
+      btn.onclick=()=>confirmShiftSwap(i);
+    }else if(i===shiftFirstIndex){
+      btn.textContent="Selected";
+      btn.className="secondary";
+      btn.onclick=()=>{ shiftFirstIndex=null; renderShiftOptions(); };
+    }else{
+      btn.textContent="Not adjacent";
+      btn.disabled=true;
+      btn.className="light";
+    }
+    d.appendChild(btn);
+    box.appendChild(d);
+  });
+}
+
+function confirmShiftSwap(secondIndex){
+  const p=getP(shiftPlayerName);
+  const a=shiftFirstIndex, b=secondIndex;
+  const beforeA=state.track[a], beforeB=state.track[b];
+  [state.track[a], state.track[b]] = [state.track[b], state.track[a]];
+  p.shifted=true;
+  p.behaviorTriggers++;
+  addLog(p.name, `Shift the Shelter swapped Round ${a+1} ${beforeA} with Round ${b+1} ${beforeB}`);
+  closeShiftShelter();
+  render();
+}
+
+
+
+function endTurn(){
+  if(!state){ return; }
+  if(state.gameFinished){ alert("Game is finished. Save the match or start a new game."); return; }
+  if(!state.startedRound){ alert("Start the round first."); return; }
+  const current = state.currentTurn;
+  if(!current){ alert("No current turn."); return; }
+  const p = getP(current);
+  p.hasEndedTurn = true;
+  addLog(current, "Ended turn");
+  advanceTurn();
+  render();
+
+  // In AI mode, if P2 is now up, the app takes its action and ends its turn.
+  if(state.mode==="ai" && state.currentTurn==="P2"){
+    aiTakeTurn(true);
+    return;
+  }
+
+  // If both players have ended their turns, automatically resolve the Environment and advance.
+  if(state.startedRound && !nextPendingTurn()){
+    addLog("System", "Both turns ended. Resolving Environment automatically.");
+    endRound(true);
+  }
+}
+
+function aiChooseAction(p,o,e){
+  if(p.stress >= species[p.species].s) return "Adapt";
+  if(p.stress === species[p.species].s-1 && ["Waste Buildup","Overturned Hide","Growing Brood","Crowded Hides"].includes(e)) return "Adapt";
+  if(["Withered Forage","Rotting Cache","Ant Invasion"].includes(e) && p.food.length>=2) return "Secure";
+  if(canPayCultivate(p,e)){
+    if(p.species==="Rubber Ducky" && p.lastCultivate===state.round-1) return "Forage";
+    return "Cultivate";
+  }
+  if(o.food.length && foodTotal(p)<species[p.species].c && e!=="Overturned Hide") return "Scavenge";
+  return "Forage";
+}
+
+function foodTotal(p){ return p.food.reduce((a,b)=>a+b,0); }
+
+function canPayCultivate(p,e){
+  let cost = species[p.species].c;
+  if(e==="Lush Leaf Cover") cost=Math.max(1,cost-1);
+  if(p.species==="Powder Blue" && p.food.includes(2)) cost=Math.max(0,cost-1);
+  return foodTotal(p) >= cost;
+}
+
+function aiTakeTurn(autoEnd=false){
+  if(state && state.gameFinished){ alert("Game is finished. Save the match or start a new game."); return; }
+  if(!state || state.mode!=="ai"){ alert("AI mode is not active."); return; }
+  if(!state.startedRound){ alert("Start the round first."); return; }
+  if(state.currentTurn!=="P2"){ if(!autoEnd) alert("It is not the AI's turn."); return; }
+  const p=state.p2, o=state.p1, e=currentEnv();
+  const chosen=aiChooseAction(p,o,e);
+  aiAction("P2", chosen, autoEnd);
+}
+
+function aiAction(n,a,autoEnd=false){
+  const p=getP(n), o=opp(p), env=currentEnv();
+  if(p.actionTakenRound===state.round) return;
+  p.actionTakenRound=state.round;
+  p.actions[a]++;
+  addLog(n, `AI chose ${a}`);
+
+  if(a==="Cultivate"){
+    let cost=effectiveCost(p);
+    if(p.species==="Powder Blue" && p.food.includes(2)) cost=Math.max(0,cost-1);
+    if(!payFood(p,cost)){ p.actions[a]--; p.actionTakenRound=null; addLog(n,"AI failed Cultivate payment"); render(); return; }
+    p.pop+=species[p.species].g;
+    if(env==="Breeding Boom") addBonus(p,1);
+    if(env==="Growing Brood"){ addBonus(p,1); p.stress++; }
+    if(env==="Overturned Hide") p.stress++;
+    if(p.species==="Rubber Ducky" && state.round!==0 && p.lastCultivate!==state.round-1){ addBonus(p,2); p.behaviorTriggers++; }
+    if(p.species==="Expansus" && p.stress < species[p.species].s-1){ addBonus(p,2); p.stress++; p.behaviorTriggers++; }
+    if(p.species==="Dairy Cow" && p.food.length && (state.round>=4 || p.food.length>=3)){
+      const count=Math.min(2,p.food.length);
+      for(let i=0;i<count;i++){
+        const m=Math.min(...p.food);
+        p.food.splice(p.food.indexOf(m),1);
+        state.foodDiscard.push(m);
+      }
+      addBonus(p,count);
+      if(count>0) p.behaviorTriggers++;
+    }
+    p.lastCultivate=state.round;
+  }
+  if(a==="Forage"){
+    const f1=drawFood(), f2=drawFood();
+    const keep=Math.max(f1??0,f2??0), discard=Math.min(f1??0,f2??0);
+    if(keep) p.food.push(keep);
+    if(discard) state.foodDiscard.push(discard);
+  }
+  if(a==="Scavenge"){
+    if(o.secured){ o.secured=false; }
+    else if(o.food.length){ const m=Math.min(...o.food); o.food.splice(o.food.indexOf(m),1); p.food.push(m); if(env==="Overturned Hide") p.stress++; }
+  }
+  if(a==="Adapt"){
+    p.adapted=true;
+    if(p.food.length && p.stress>=2){ const m=Math.min(...p.food); p.food.splice(p.food.indexOf(m),1); state.foodDiscard.push(m); p.stress=Math.max(0,p.stress-2); }
+    else p.stress=Math.max(0,p.stress-1);
+  }
+  if(a==="Prepare"){
+    for(let i=state.round+1;i<state.track.length;i++){ p.prepared=i; break; }
+  }
+  if(a==="Secure"){ p.secured=true; }
+  advanceTurn();
+  render();
+}
+
+
+function runAIVsAI(){
+  if(!state){
+    alert("Start a game first.");
+    return;
+  }
+  if(state.gameFinished){
+    if(!confirmLeaveFinishedGame()) return;
+    startNewGameSameSetup();
+  }
+  // Temporarily let AI control both sides for the current setup.
+  state.mode = "aivai";
+  while(!state.gameFinished && state.round < 6){
+    if(!state.startedRound) startRound();
+    let safety=0;
+    while(nextPendingTurn() && safety < 4){
+      const n = state.currentTurn;
+      const p = getP(n), o = opp(p), e = currentEnv();
+      const chosen = aiChooseAction(p,o,e);
+      aiActionAny(n, chosen);
+      p.hasEndedTurn = true;
+      addLog(n, "AI ended turn");
+      advanceTurn();
+      safety++;
+    }
+    if(!state.gameFinished) endRound();
+  }
+  finishGame();
+}
+
+function aiActionAny(n,a){
+  const originalMode = state.mode;
+  const p=getP(n), o=opp(p), env=currentEnv();
+  if(p.actionTakenRound===state.round) return;
+  p.actionTakenRound=state.round;
+  p.actions[a]++;
+  addLog(n, `AI chose ${a}`);
+
+  if(a==="Cultivate"){
+    let cost=effectiveCost(p);
+    if(p.species==="Powder Blue" && p.food.includes(2)) cost=Math.max(0,cost-1);
+    if(!payFood(p,cost)){ p.actions[a]--; p.actionTakenRound=null; addLog(n,"AI failed Cultivate payment"); return; }
+    p.pop+=species[p.species].g;
+    if(env==="Breeding Boom") addBonus(p,1);
+    if(env==="Growing Brood"){ addBonus(p,1); p.stress++; }
+    if(env==="Overturned Hide") p.stress++;
+    if(p.species==="Rubber Ducky" && state.round!==0 && p.lastCultivate!==state.round-1){ addBonus(p,2); p.behaviorTriggers++; }
+    if(p.species==="Expansus" && p.stress < species[p.species].s-1){ addBonus(p,2); p.stress++; p.behaviorTriggers++; }
+    if(p.species==="Dairy Cow" && p.food.length && (state.round>=4 || p.food.length>=3)){
+      const count=Math.min(2,p.food.length);
+      for(let i=0;i<count;i++){
+        const m=Math.min(...p.food);
+        p.food.splice(p.food.indexOf(m),1);
+        state.foodDiscard.push(m);
+      }
+      addBonus(p,count);
+      if(count>0) p.behaviorTriggers++;
+    }
+    p.lastCultivate=state.round;
+  }
+  if(a==="Forage"){
+    const f1=drawFood(), f2=drawFood();
+    const keep=Math.max(f1??0,f2??0), discard=Math.min(f1??0,f2??0);
+    if(keep) p.food.push(keep);
+    if(discard) state.foodDiscard.push(discard);
+  }
+  if(a==="Scavenge"){
+    if(o.secured){ o.secured=false; }
+    else if(o.food.length){ const m=Math.min(...o.food); o.food.splice(o.food.indexOf(m),1); p.food.push(m); if(env==="Overturned Hide") p.stress++; }
+  }
+  if(a==="Adapt"){
+    p.adapted=true;
+    if(p.food.length && p.stress>=2){ const m=Math.min(...p.food); p.food.splice(p.food.indexOf(m),1); state.foodDiscard.push(m); p.stress=Math.max(0,p.stress-2); }
+    else p.stress=Math.max(0,p.stress-1);
+  }
+  if(a==="Prepare"){
+    for(let i=state.round+1;i<state.track.length;i++){ p.prepared=i; break; }
+  }
+  if(a==="Secure"){ p.secured=true; }
+}
+
+function finishGame(){
+  if(!state) return;
+  state.gameFinished = true;
+  state.startedRound = false;
+  state.currentTurn = null;
+  const csv=makeCSV();
+  document.getElementById("exportBox").classList.remove("hidden");
+  document.getElementById("csvOut").textContent=csv;
+  renderWinner();
+  render();
+  renderHistory();
+  document.getElementById("exportBox").scrollIntoView({behavior:"smooth"});
+}
+
+function renderWinner(){
+  const p1=state.p1, p2=state.p2;
+  const s1=score(p1), s2=score(p2);
+  let result="";
+  if(s1>s2) result=`${p1.name} wins with ${p1.species}`;
+  else if(s2>s1) result=`${p2.name} wins with ${p2.species}`;
+  else result="Tie game";
+
+  document.getElementById("winnerSummary").innerHTML=`
+    <h3 style="margin-top:0">${result}</h3>
+    <p><b>Game finished after 6 rounds.</b> Save Match before starting another game if you want this result kept in history.</p>
+    <div class="grid two">
+      <div class="card">
+        <h4>${p1.name}: ${p1.species}</h4>
+        <p><b>Final Score:</b> ${s1}</p>
+        <p>Population ${p1.pop} − Stress ${p1.stress}${unstable(p1)?" − Unstable 2":""}</p>
+        <p><b>Status:</b> ${unstable(p1)?"Unstable":"Stable"}</p>
+      </div>
+      <div class="card">
+        <h4>${p2.name}: ${p2.species}</h4>
+        <p><b>Final Score:</b> ${s2}</p>
+        <p>Population ${p2.pop} − Stress ${p2.stress}${unstable(p2)?" − Unstable 2":""}</p>
+        <p><b>Status:</b> ${unstable(p2)?"Unstable":"Stable"}</p>
+      </div>
+    </div>
+  `;
+}
+function makeCSV(){
+ const headers=["Run ID","Date","Source","Track Name","Track Type","Round Track","Food Branch","Player","Species","Opponent Species","Win?","Final Population","Final Stress","Unstable End?","Final Score","Behavior Triggers","Bonus Pop Gained","Bonus Pop Blocked","Cultivate","Forage","Scavenge","Adapt","Prepare","Secure","Notes"];
+ const rows=[state.p1,state.p2].map(p=>{
+  const o=opp(p);
+  return [state.runId,new Date().toISOString().slice(0,10),"Human",state.trackName,state.trackType,state.track.join(" > "),state.foodBranch,p.name,p.species,o.species,score(p)>score(o)?"Yes":"No",p.pop,p.stress,unstable(p)?"Yes":"No",score(p),p.behaviorTriggers,p.bonusPop,p.bonusBlocked,p.actions.Cultivate,p.actions.Forage,p.actions.Scavenge,p.actions.Adapt,p.actions.Prepare,p.actions.Secure,(((document.getElementById("gameNotes") ? document.getElementById("gameNotes").value : "") || "manual app v2.0").trim() || "manual app v2.0")];
+ });
+ return [headers,...rows].map(r=>r.map(x=>`"${String(x).split('"','""')}"`).join(",")).join("\n");
+}
+function downloadCSV(){
+ const blob=new Blob([makeCSV()],{type:"text/csv"});
+ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=state.runId+"_podbound_result.csv"; a.click();
+}
+async function copyCSV(){ await navigator.clipboard.writeText(makeCSV()); alert("CSV copied."); }
+
+function snapshotSetup(){
+  if(state){
+    return {
+      trackName: state.trackName,
+      trackType: state.trackType,
+      foodBranch: state.foodBranch,
+      mode: state.mode==="aivai" ? "manual" : state.mode,
+      firstPlayer: state.firstPlayer,
+      track: state.track.slice(),
+      p1Species: state.p1.species,
+      p2Species: state.p2.species
+    };
+  }
+  return {
+    trackName: document.getElementById("trackSelect").value,
+    trackType: inferTrackType(document.getElementById("trackSelect").value),
+    foodBranch: document.getElementById("foodBranch").value,
+    mode: document.getElementById("gameMode").value,
+    firstPlayer: document.getElementById("firstPlayer").value==="coin" ? chooseFirstPlayer() : document.getElementById("firstPlayer").value,
+    track: (document.getElementById("customTrack").value.trim()
+      ? document.getElementById("customTrack").value.split(",").map(x=>x.trim()).filter(Boolean)
+      : tracks[document.getElementById("trackSelect").value].slice()),
+    p1Species: document.getElementById("p1Species").value,
+    p2Species: document.getElementById("p2Species").value
+  };
+}
+
+function hasUnsavedFinishedMatch(){
+  return state && state.gameFinished && !state.savedCurrentMatch;
+}
+
+function confirmLeaveFinishedGame(){
+  if(hasUnsavedFinishedMatch()){
+    return confirm("This finished game has not been saved yet. Start a new game anyway?");
+  }
+  return true;
+}
+
+function startNewGameSameSetup(){
+  if(!confirmLeaveFinishedGame()) return;
+  const setup = snapshotSetup();
+  state = {
+    runId:"PB-"+new Date().toISOString().slice(0,10)+"-"+Math.floor(Math.random()*9999),
+    trackName: setup.trackName,
+    trackType: setup.trackType,
+    foodBranch: setup.foodBranch,
+    mode: setup.mode || "manual",
+    firstPlayer: setup.firstPlayer || "P1",
+    currentTurn:null,
+    track: setup.track.slice(),
+    round:0,
+    startedRound:false,
+    gameFinished:false,
+    log:[],
+    foodDeck:shuffle(foodDeckBase.slice()),
+    foodDiscard:[],
+    p1:makePlayer("P1", setup.p1Species),
+    p2:makePlayer("P2", setup.p2Species)
+  };
+  state.currentTurn=state.firstPlayer;
+  document.getElementById("exportBox").classList.add("hidden");
+  const notesBox=document.getElementById("gameNotes"); if(notesBox) notesBox.value="";
+  document.getElementById("shiftBox").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  document.getElementById("setup").classList.add("hidden");
+  renderLog();
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function returnToSetup(){
+  if(!confirmLeaveFinishedGame()) return;
+  const setup = snapshotSetup();
+  document.getElementById("setup").classList.remove("hidden");
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("exportBox").classList.add("hidden");
+  document.getElementById("shiftBox").classList.add("hidden");
+  document.getElementById("foodBranch").value = setup.foodBranch;
+  document.getElementById("gameMode").value = setup.mode || "manual";
+  document.getElementById("firstPlayer").value = setup.firstPlayer || "P1";
+  document.getElementById("p1Species").value = setup.p1Species;
+  document.getElementById("p2Species").value = setup.p2Species;
+  document.getElementById("customTrack").value = setup.trackName === "Random / Custom Track" || setup.trackName === "Custom" ? setup.track.join(", ") : "";
+  document.getElementById("runId").value = "PB-"+new Date().toISOString().slice(0,10)+"-"+Math.floor(Math.random()*9999);
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+
+function resetAll(){ location.reload(); }
+
+if(document.readyState === "loading"){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
+
+</script>
+</body>
+</html>
